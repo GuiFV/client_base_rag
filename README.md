@@ -5,7 +5,7 @@
 - Limited number of calls per day. Use your own OpenAI API key to have limitless usage
 - Uploaded document and entire chat are destroyed after closing the tab or browser
 
-### This is a AWS CDK deployable project
+### This is an AWS CDK deployable project
 
 - Flask based
 - Runs on Lambda
@@ -17,6 +17,8 @@ directory.  To create the virtualenv it assumes that there is a `python3`
 (or `python` for Windows) executable in your path with access to the `venv`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually.
+
+For more information on setting up AWS CDK, visit https://aws.amazon.com/cdk/
 
 To manually create a virtualenv on MacOS and Linux:
 
@@ -72,6 +74,17 @@ At this point you can now synthesize the CloudFormation template for this code.
 
 ```
 $ cdk synth
+```
+
+Run locally with
+```
+$ python lambda/app.py
+```
+
+
+And deploy with
+```
+$ cdk deploy
 ```
 
 To add additional dependencies, for example other CDK libraries, just add
