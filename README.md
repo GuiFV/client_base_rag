@@ -49,6 +49,28 @@ And update any lambda dependencies.
 
 ```
 pip install -r lambda/requirements.txt -t lambda/ --upgrade
+
+or
+
+    pip install \
+        --platform manylinux2014_x86_64 \
+        --target=lambda/ \
+        --implementation cp \
+        --python-version 3.9 \
+        --only-binary=:all: --upgrade \
+        -r lambda/requirements.txt
+```
+
+Set up a OpenAI API secret key
+
+```
+$ aws secretsmanager create-secret --name openai-api-key --secret-string "your_openai_api_key_here"
+```
+
+Generate and set up a session secret key
+
+```
+$ aws secretsmanager create-secret --name app-session-secret-key --secret-string "a_strong_string_for_session_security"
 ```
 
 At this point you can now synthesize the CloudFormation template for this code.

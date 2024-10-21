@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#upload-container {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+#app-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.upload-label {
+    margin-right: 10px;
+}
+
+#file-upload {
+    font-size: 16px;
+}
+
+#chat-container {
+    width: 800px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+@media (max-width: 800px) {
+    #chat-container {
+        width: 100%;
+    }
+}
+
+#chat-window {
+    height: 600px;
+    overflow-y: scroll;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+#output div {
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    max-width: 80%;
+}
+
+#output .user {
+    background: #007bff;
+    color: #fff;
+    margin-left: auto;
+    text-align: right;
+}
+
+#output .bot {
+    background: #e0e0e0;
+    margin-right: auto;
+}
+
+#user-input, #send-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    outline: none;
+}
+
+#user-input {
+    border-top: 1px solid #ccc;
+    flex: 1;
+}
+
+#send-btn {
+    background: #007bff;
+    color: #fff;
+    cursor: pointer;
+    border-top: 1px solid #ccc;
+}
