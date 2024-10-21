@@ -42,23 +42,18 @@ Once the virtualenv is activated, you can install the required dependencies.
 ```
 $ pip install -r requirements.txt
 $ pip install -r lambda/requirements.txt
-
 ```
 
 And update any lambda dependencies.
 
 ```
-pip install -r lambda/requirements.txt -t lambda/ --upgrade
-
-or
-
-    pip install \
-        --platform manylinux2014_x86_64 \
-        --target=lambda/ \
-        --implementation cp \
-        --python-version 3.9 \
-        --only-binary=:all: --upgrade \
-        -r lambda/requirements.txt
+$ pip install \
+    --platform manylinux2014_x86_64 \
+    --target=lambda/ \
+    --implementation cp \
+    --python-version 3.9 \
+    --only-binary=:all: --upgrade \
+    -r lambda/requirements.txt
 ```
 
 Set up a OpenAI API secret key
