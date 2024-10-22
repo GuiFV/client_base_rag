@@ -47,19 +47,28 @@ function appendMessage(type, message) {
     output.scrollTop = output.scrollHeight; // Auto scroll to the bottom
 }
 
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const fileContents = e.target.result;
-            console.log(fileContents); // Store or process the file contents as needed
-            appendMessage('bot', "File uploaded and read successfully.");
-        };
-        reader.onerror = function () {
-            console.error("Error reading file");
-            appendMessage('bot', "Failed to read the file.");
-        };
-        reader.readAsText(file); // This works for text files, configure accordingly for other types
-    }
-}
+   async function handleFileUpload(event) {
+       const file = event.target.files[0];
+       if (file) {
+           const formData = new FormData();
+           formData.append('file', file);
+
+           try {
+               const response = await fetch('/api/upload', {
+                   method: 'POST',
+                   body: formData
+               });
+
+               if (!response.ok) {
+                   throw new Error('Failed to upload file.');
+               }
+
+               const data = await response.json();
+               appendMessage('bot', "File uploaded and parsed successfully.");
+
+           } catch (error) {
+               console.error('Error:', error);
+               appendMessage('bot', 'An error occurred while uploading the file.');
+           }
+       }
+   }

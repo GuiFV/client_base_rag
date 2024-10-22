@@ -4,3 +4,6 @@ asgiref
 boto3
 openai==1.52.0
 exceptiongroup
+pymupdf
+python-pptx
+python-docx
