@@ -23,6 +23,7 @@ Application: [https://link.gfv.bio/RAG-GPT](https://link.gfv.bio/RAG-GPT)
 - Runs on Lambda
 - S3 bucket for files
 - App is exposed with Lambda function URL
+- CI/CD pipeline with Github actions
 
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
@@ -59,7 +60,7 @@ $ pip install -r requirements-dev.txt
 $ pip install -r lambda/requirements.txt
 ```
 
-And update any lambda dependencies for deployment.
+And update any lambda dependencies for deployment (required before pushing for CI/CD pipeline)
 
 ```
 $ pip install \
