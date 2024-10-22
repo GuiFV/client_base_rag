@@ -15,7 +15,7 @@ Application: https://link.gfv.bio/RAG-GPT
 ### Characteristics
 - Uploaded files are associated with your session only.
 - All Files are deleted automatically from S3 bucket every 24h.
-- Limited number of calls (per day and per user)
+- Limited number of calls - per day: 10 files max, 30 messages max
 
 ### This is an AWS CDK deployable project
 

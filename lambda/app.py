@@ -27,6 +27,8 @@ ensure_venv()
 
 # Imports
 from flask import Flask, render_template, request, jsonify, session
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import boto3
 from openai import OpenAI
 import re
@@ -38,6 +40,12 @@ if RUNNING_LOCALLY:
 
 app = Flask(__name__, static_url_path='/static')
 
+# Initialize Limiter
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["100 per day", "10 per hour"]
+)
 
 def get_secret(secret_name):
     # Fetch OpenAI API key from AWS Secrets Manager
@@ -139,12 +147,14 @@ def home():
 
 
 @app.route('/api/clear_session', methods=['POST'])
+@limiter.limit("10 per day")
 def clear_session():
     session.clear()
     return jsonify({'message': 'Session cleared successfully'}), 200
 
 
 @app.route('/api/message', methods=['POST'])
+@limiter.limit("30 per day")
 def process_message():
     data = request.json
     user_message = data['message']
@@ -195,6 +205,7 @@ def process_message():
 
 
 @app.route('/api/upload', methods=['POST'])
+@limiter.limit("10 per day")
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
