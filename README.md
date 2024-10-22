@@ -1,7 +1,7 @@
 # LLM bot with Client Side RAG
 ## Upload a file and use ChatGPT to talk about it
 
-Application: https://link.gfv.bio/RAG-GPT
+Application: [https://link.gfv.bio/RAG-GPT](https://link.gfv.bio/RAG-GPT)
 
 ### What is RAG GPT?
 - It's ChatGPT on steroids! You upload a document and instantly augment it with your data!
@@ -31,7 +31,7 @@ directory.  To create the virtualenv it assumes that there is a `python3`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually.
 
-For more information on setting up AWS CDK, visit https://aws.amazon.com/cdk/
+For more information on setting up AWS CDK, visit [https://aws.amazon.com/cdk/](https://aws.amazon.com/cdk/)
 
 To manually create a virtualenv on MacOS and Linux:
 
