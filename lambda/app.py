@@ -1,14 +1,20 @@
 import sys
 import os
 
+# Global flag to indicate if running locally
+RUNNING_LOCALLY = False
+
+
 # Function to check and modify sys.path if virtual environment is activated
 def ensure_venv():
-    """This was required to isolate the machine locally and under AWS due to pydantic library issue"""
+    """This was required to isolate the machine locally and under AWS due to pydantic library issue."""
+    global RUNNING_LOCALLY
     venv_path = os.environ.get('VIRTUAL_ENV')
     if venv_path:
         venv_site_packages = os.path.join(venv_path, 'lib', 'python3.12', 'site-packages')
         if os.path.exists(venv_site_packages):
             sys.path.insert(0, venv_site_packages)
+            RUNNING_LOCALLY = True
             print(f"VENV detected, updated sys.path: {sys.path}")
         else:
             print(f"Path {venv_site_packages} does not exist")
@@ -23,14 +29,15 @@ ensure_venv()
 from flask import Flask, render_template, request, jsonify, session
 import boto3
 from openai import OpenAI
-import json
-import csv
-import fitz  # PyMuPDF
-from docx import Document  # python-docx
 import re
 
+# Constants
+if RUNNING_LOCALLY:
+    LOCAL_STORAGE_PATH = os.path.join(os.getcwd(), "local_s3")  # Local storage path at the project's root
+    os.makedirs(LOCAL_STORAGE_PATH, exist_ok=True)
 
 app = Flask(__name__, static_url_path='/static')
+
 
 def get_secret(secret_name):
     # Fetch OpenAI API key from AWS Secrets Manager
@@ -50,52 +57,69 @@ def get_secret(secret_name):
     return secret
 
 
+# Fetch secrets
 OPENAI_API_KEY = get_secret("openai-api-key")
-
-# Retrieve the session secret key
 session_secret_key = get_secret("app-session-secret-key")
 
 if not OPENAI_API_KEY:
     raise RuntimeError("Failed to fetch OpenAI API key")
-
 if not session_secret_key:
     raise RuntimeError("Failed to fetch session secret key")
 
 # Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
-
 app.secret_key = session_secret_key
 
+# S3 bucket environment variable
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+if not RUNNING_LOCALLY and BUCKET_NAME is None:
+    raise RuntimeError("S3 BUCKET_NAME environment variable is not set in non-local environment")
 
-def parse_file(file):
-    """Parse the uploaded file based on its type and return its contents as a string."""
+s3_client = boto3.client('s3') if not RUNNING_LOCALLY else None
+
+
+def save_and_parse_file(file):
+    """Save the uploaded file locally and parse its contents."""
     filename = file.filename
-    file_contents = ""
+    local_path = os.path.join(LOCAL_STORAGE_PATH, filename)
+    file.save(local_path)
 
-    if filename.endswith('.pdf'):
-        doc = fitz.open(file.stream)
-        for page in doc:
-            file_contents += page.get_text()
-    elif filename.endswith('.txt'):
-        file_contents = file.read().decode('utf-8')
-    elif filename.endswith('.csv'):
-        file_contents = file.read().decode('utf-8')
-    elif filename.endswith('.docx'):
-        doc = Document(file)
-        file_contents = '\n'.join([para.text for para in doc.paragraphs])
-    else:
-        raise ValueError("Unsupported file type")
+    with open(local_path, 'r', encoding='utf-8') as f:
+        file_contents = f.read()
 
-    # Ensure storing correctly in session
-    session['uploaded_document'] = file_contents
-    return file_contents
+    print(f'Saved file at: {local_path}')
+    print(f'File length: {len(file_contents)}')
+    print(f'File contents: {file_contents[:100]}')  # Printing only first 100 characters for brevity
+
+    return local_path, file_contents
+
 
 def extract_keywords(query):
     """Extract keywords from the query by removing stop words and focusing on significant terms."""
     stop_words = {'is', 'the', 'on', 'in', 'who', 'a', 'an'}
     words = re.findall(r'\b\w+\b', query.lower())
     keywords = [word for word in words if word not in stop_words]
+    print(f"Extracted keywords: {keywords}")  # Debugging output
     return keywords
+
+
+def process_s3_file(file_key, query):
+    """Fetch file from S3 and process it in chunks to search for query."""
+    if RUNNING_LOCALLY:
+        raise RuntimeError("S3 operations are not allowed in local environment")
+
+    response = s3_client.get_object(Bucket=BUCKET_NAME, Key=file_key)
+    content = response['Body'].iter_lines()
+
+    keywords = extract_keywords(query)
+    snippets = []
+
+    for line in content:
+        decoded_line = line.decode('utf-8')
+        if any(keyword in decoded_line.lower() for keyword in keywords):
+            snippets.append(decoded_line.strip())
+
+    return snippets if snippets else ["No relevant information found in the document."]
 
 
 def search_document(document, query):
@@ -104,9 +128,9 @@ def search_document(document, query):
     lines = document.split('\n')
 
     snippets = [line.strip() for line in lines if any(keyword in line.lower() for keyword in keywords)]
-
+    print(f"Document length: {len(document)}")
+    print(f"Keywords: {keywords}\nSnippets: {snippets}")  # Debugging output
     return snippets if snippets else ["No relevant information found in the document."]
-
 
 
 @app.route('/')
@@ -114,39 +138,46 @@ def home():
     return render_template('index.html')
 
 
+@app.route('/api/clear_session', methods=['POST'])
+def clear_session():
+    session.clear()
+    return jsonify({'message': 'Session cleared successfully'}), 200
+
+
 @app.route('/api/message', methods=['POST'])
 def process_message():
     data = request.json
     user_message = data['message']
 
-    # Initialize chat history if it doesn't exist
     if 'chat_history' not in session:
         session['chat_history'] = [
             {"role": "system", "content": "You are a helpful assistant."}
         ]
 
-    # Initializing an indication text for snippets
     snippets_text = ""
 
-    # Augment user message with relevant snippets from the document
-    if 'uploaded_document' in session:
-
-        # Retrieve and print the document contents from the session
-        document = session['uploaded_document']
+    if not RUNNING_LOCALLY and 'uploaded_document_s3_key' in session:
+        # Retrieve document from S3
+        s3_key = session['uploaded_document_s3_key']
+        snippets = process_s3_file(s3_key, user_message)
+        snippets_text = "\n".join(snippets)
+        print(f's3_key: {s3_key}')
+    elif 'uploaded_document_path' in session:
+        # Retrieve document from local storage
+        with open(session['uploaded_document_path'], 'r', encoding='utf-8') as f:
+            document = f.read()
         snippets = search_document(document, user_message)
         snippets_text = "\n".join(snippets)
+        print(f'document: {document}')
 
-    # Inform LLM explicitly that the document content is additional context
     augmented_message = (
         f"User's message:\n{user_message}\n\n"
         "Additional context provided from the uploaded document:\n"
         f"{snippets_text}\n"
     )
 
-    # Append user message to chat history
     session['chat_history'].append({"role": "user", "content": augmented_message})
 
-    # Use the OpenAI API to process the message
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=session['chat_history']
@@ -154,14 +185,11 @@ def process_message():
 
     bot_response = completion.choices[0].message.content.strip()
 
-    # Append assistant response to chat history
     session['chat_history'].append({"role": "assistant", "content": bot_response})
 
-    # Explicitly mark the session as modified
     session.modified = True
 
-    # Format and send the augmented response with the information source
-    response = f"{bot_response}\n\nInformation source:\n{snippets_text}"
+    response = f"{bot_response}\n\nInformation source:\n\n{snippets_text}"
 
     return jsonify({'response': response})
 
@@ -175,14 +203,30 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
+    if file.mimetype not in ['text/plain', 'text/csv']:
+        return jsonify({'error': 'Unsupported file type'}), 400
+
+    if len(file.read()) > 1 * 1024 * 1024:  # Limiting file size to 1MB
+        return jsonify({'error': 'File size exceeds limit (1MB)'}), 400
+
+    file.seek(0)  # Reset file pointer to beginning after checking size
+
     try:
-        file_contents = parse_file(file)
-        session['uploaded_document'] = file_contents
-        return jsonify({'message': 'File uploaded and parsed successfully.'})
+        if RUNNING_LOCALLY:
+            local_path, file_contents = save_and_parse_file(file)
+            session['uploaded_document_path'] = local_path
+            print(f"File parsed contents stored path: {local_path}")
+
+        else:
+            s3_key = f"uploads/{file.filename}"
+            s3_client.upload_fileobj(file, BUCKET_NAME, s3_key)
+            session['uploaded_document_s3_key'] = s3_key
+
+        return jsonify(
+            {'message': f'File {"stored locally" if RUNNING_LOCALLY else "uploaded to S3"} and parsed successfully.'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
 if __name__ == "__main__":
-
     app.run(debug=True)

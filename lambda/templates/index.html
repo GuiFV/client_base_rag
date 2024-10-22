@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Base RAG Chat</title>
+    <title>RAG GPT</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-   <div id="upload-container">
-       <div id="app-title">Client Base RAG Chat</div>
+   <div id="nav-container">
+       <div id="app-title" onclick="refreshPage()"><span class="highlight">RAG GPT Chat</span></div>
+       <button id="how-it-works-btn" onclick="openModal()">How it Works</button>
        <label for="file-upload" class="upload-label">Upload Document:</label>
-       <input type="file" id="file-upload" accept=".pdf,.txt,.csv,.docx" />
+       <input type="file" id="file-upload" accept=".txt,.csv" />
+       <a id="github-link" href="https://github.com/GuiFV/client_base_rag" target="_blank"><i class="fab fa-github"></i></a>
    </div>
     <div id="chat-container">
         <div id="chat-window">
@@ -19,6 +22,27 @@
         <input id="user-input" type="text" placeholder="Type your message here..." />
         <button id="send-btn">Send</button>
     </div>
+
+    <!-- The Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>What is RAG GPT?</h3>
+            <p>It's ChatGPT on steroids! You upload a document and instantly augment it with your data!</p>
+            <p>This is a small prototype to showcase AWS services (CDK, Lambda and S3) and Large Language Models
+            capabilities when extended with files using RAG technique (Retrieval-Augmented Generation).</p>
+            <h3>How to Use:</h3>
+            <p>1. Upload a .txt or .csv document using the Upload Document button. (1MB MAX)</p>
+            <p>2. Type your message in the input box below and hit Send or press Enter.</p>
+            <p>3. The system will process your message and respond using data from your file.</p>
+            <h3>Characteristics:</h3>
+            <p>Uploaded files are associated with your session only.<a href="#" id="refresh-session-link">(click here to refresh your session)</a></p>
+            <p>All Files are deleted automatically from S3 bucket every 24h.</p>
+            <p>Limited number of calls (per day and per user)</p>
+            <p>Fork this project and quickly deploy it using AWS CDK <a href="https://github.com/GuiFV/client_base_rag" target="_blank">(Github link)</a></p>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

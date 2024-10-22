@@ -8,7 +8,7 @@ body {
     margin: 0;
 }
 
-#upload-container {
+#nav-container {
     width: 100%;
     padding: 10px;
     display: flex;
@@ -20,18 +20,53 @@ body {
 }
 
 #app-title {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: bold;
     margin-left: 20px;
-    margin-right: 20px;
+    cursor: pointer;
+}
+
+#app-title .highlight {
+    color: #007bff;
+    font-style: italic;
+}
+
+#how-it-works-btn {
+    font-size: 16px;
+    margin-left: 20px;
+    padding: 8px 16px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#how-it-works-btn:hover {
+    background-color: #0056b3;
 }
 
 .upload-label {
     margin-right: 10px;
+    margin-left: 20px;
 }
 
 #file-upload {
     font-size: 16px;
+}
+
+#github-link {
+    margin-left: auto;
+    margin-right: 20px;
+    font-size: 20px;
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+#github-link:hover {
+    color: #007bff;
 }
 
 #chat-container {
@@ -74,7 +109,8 @@ body {
     margin-right: auto;
 }
 
-#user-input, #send-btn {
+#user-input,
+#send-btn {
     width: 100%;
     padding: 10px;
     border: none;
@@ -91,4 +127,42 @@ body {
     color: #fff;
     cursor: pointer;
     border-top: 1px solid #ccc;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }

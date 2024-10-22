@@ -10,3 +10,4 @@ __pycache__
 cdk.out
 .idea
 refs
+local_s3

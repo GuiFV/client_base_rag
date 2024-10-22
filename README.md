@@ -1,14 +1,27 @@
 # LLM bot with Client Side RAG
-## Upload a file and ask information about it
+## Upload a file and use ChatGPT to talk about it
 
-### Characteristics:
-- Limited number of calls per day. Use your own OpenAI API key to have limitless usage
-- Uploaded document and entire chat are destroyed after closing the tab or browser
+Application: https://link.gfv.bio/RAG-GPT
+
+### What is RAG GPT?
+- It's ChatGPT on steroids! You upload a document and instantly augment it with your data!
+- This is a small prototype to showcase AWS services (CDK, Lambda and S3) and Large Language Models capabilities when extended with files using RAG technique (Retrieval-Augmented Generation).
+
+### How to Use
+1. Upload a .txt or .csv document using the Upload Document button. (1MB MAX)
+2. Type your message in the input box below and hit Send or press Enter.
+3. The system will process your message and respond using data from your file.
+
+### Characteristics
+- Uploaded files are associated with your session only.
+- All Files are deleted automatically from S3 bucket every 24h.
+- Limited number of calls (per day and per user)
 
 ### This is an AWS CDK deployable project
 
 - Flask based
 - Runs on Lambda
+- S3 bucket for files
 - App is exposed with Lambda function URL
 
 This project is set up like a standard Python project.  The initialization
@@ -39,14 +52,14 @@ If you are a Windows platform, you would activate the virtualenv like this:
 % .venv\Scripts\activate.bat
 ```
 
-Once the virtualenv is activated, you can install the required dependencies.
+Once the virtualenv is activated, you can install the required dependencies locally.
 
 ```
 $ pip install -r requirements.txt
 $ pip install -r lambda/requirements.txt
 ```
 
-And update any lambda dependencies.
+And update any lambda dependencies for deployment.
 
 ```
 $ pip install \
@@ -80,7 +93,6 @@ Run locally with
 ```
 $ python lambda/app.py
 ```
-
 
 And deploy with
 ```
