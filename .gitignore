@@ -9,5 +9,6 @@ __pycache__
 .cdk.staging
 cdk.out
 .idea
+.idea/
 refs
 local_s3

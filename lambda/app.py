@@ -180,11 +180,18 @@ def process_message():
         snippets_text = "\n".join(snippets)
         print(f'document: {document}')
 
-    augmented_message = (
-        f"User's message:\n{user_message}\n\n"
-        "Additional context provided from the uploaded document:\n"
-        f"{snippets_text}\n"
-    )
+    if not snippets_text:
+        augmented_message = (
+            f"User's message:\n{user_message}\n\n"
+            "No document uploaded. To use the assistant's full capability, please upload a document."
+        )
+
+    else:
+        augmented_message = (
+            f"User's message:\n{user_message}\n\n"
+            "Additional context provided from the uploaded document:\n"
+            f"{snippets_text}\n"
+        )
 
     session['chat_history'].append({"role": "user", "content": augmented_message})
 
