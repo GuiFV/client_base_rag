@@ -84,6 +84,11 @@ Generate and set up a session secret key
 $ aws secretsmanager create-secret --name app-session-secret-key --secret-string "a_strong_string_for_session_security"
 ```
 
+Run tests with
+```
+$ pytest tests lambda/tests
+```
+
 At this point you can now synthesize the CloudFormation template for this code.
 
 ```
