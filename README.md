@@ -84,7 +84,7 @@ Generate and set up a session secret key
 $ aws secretsmanager create-secret --name app-session-secret-key --secret-string "a_strong_string_for_session_security"
 ```
 
-Run tests with
+Run tests locally with
 ```
 $ pytest tests lambda/tests
 ```
@@ -100,10 +100,67 @@ Run locally with
 $ python lambda/app.py
 ```
 
-And deploy with
+And manual deploy with
 ```
 $ cdk deploy
 ```
+
+For CI-CD deployment, insert in 'secrets and variables/actions/repository secrets' the following variables:
+
+- OPENAI_API_KEY
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- BUCKET_NAME
+- OPENAI_SECRET_ARN
+- SESSION_SECRET_KEY_ARN
+- LAMBDA_FUNCTION_URL
+
+Commands to expose them:
+
+Stack name: 
+```sh
+aws cloudformation list-stacks --query "StackSummaries[*].StackName"
+```
+
+Lambda function name: 
+```sh
+aws lambda list-functions --query 'Functions[*].FunctionName' --output text
+```
+
+Retrieve Logical Resource IDs: 
+To list all logical resource IDs in your stack:
+```sh
+aws cloudformation describe-stack-resources --stack-name <your_identified_stack_name> --query 'StackResources[*].LogicalResourceId' --output text
+```
+
+Replace `<your_identified_stack_name>`, `<your_lambda_function_name>`, and `<your_logical_resource_id>` with actual values:
+
+Commands to retrieve and expose secrets:
+
+Retrieve the `BUCKET_NAME` (Physical Resource ID for your bucket):
+```sh
+BUCKET_NAME=$(aws cloudformation describe-stack-resource --stack-name <your_identified_stack_name> --logical-resource-id <your_logical_resource_id> --query 'StackResourceDetail.PhysicalResourceId' --output text)
+echo "BUCKET_NAME: $BUCKET_NAME"
+```
+
+Retrieve the `OPENAI_SECRET_ARN`:
+```sh
+OPENAI_SECRET_ARN=$(aws secretsmanager describe-secret --secret-id openai-api-key --query 'ARN' --output text)
+echo "OPENAI_SECRET_ARN: $OPENAI_SECRET_ARN"
+```
+
+Retrieve the `SESSION_SECRET_KEY_ARN`:
+```sh
+SESSION_SECRET_KEY_ARN=$(aws secretsmanager describe-secret --secret-id app-session-secret-key --query 'ARN' --output text)
+echo "SESSION_SECRET_KEY_ARN: $SESSION_SECRET_KEY_ARN"
+```
+
+Retrieve the `LAMBDA_FUNCTION_URL` (Function ARN for your Lambda function):
+```sh
+LAMBDA_FUNCTION_URL=$(aws lambda list-functions --query "Functions[?FunctionName=='<your_lambda_function_name>'].FunctionArn" --output text)
+echo "LAMBDA_FUNCTION_URL: $LAMBDA_FUNCTION_URL"
+```
+
 
 To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`

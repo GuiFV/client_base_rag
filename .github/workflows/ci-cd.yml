@@ -40,6 +40,10 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+        OPENAI_SECRET_ARN: ${{ secrets.OPENAI_SECRET_ARN }}
+        SESSION_SECRET_KEY_ARN: ${{ secrets.SESSION_SECRET_KEY_ARN }}
+        LAMBDA_FUNCTION_URL: ${{ secrets.LAMBDA_FUNCTION_URL }}
       run: pytest tests lambda/tests
 
     - name: Synthesize CDK
